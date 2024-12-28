@@ -1,0 +1,66 @@
+name: Add User to Administrator and Screenshot to Telegram
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  add-user-and-screenshot:
+    runs-on: windows-2019
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Add a new user hk3u with password 1
+      - name: Add User hk3u and Assign to Administrators
+        run: |
+          Write-Output "Adding user hk3u..."
+          net user hk3u 1 /add
+          Write-Output "Assigning user hk3u to Administrators group..."
+          net localgroup Administrators hk3u /add
+          Write-Output "User hk3u successfully added to Administrators group."
+
+      # Install Avica (example)
+      - name: Install Avica
+        run: |
+          Write-Output "Installing Avica..."
+          # Replace the URL with Avica's installer or script URL
+          Invoke-WebRequest -Uri "https://example.com/avica-installer.exe" -OutFile "avica-installer.exe"
+          Start-Process -FilePath ".\avica-installer.exe" -ArgumentList "/silent" -Wait
+
+      # Take a screenshot of the desktop
+      - name: Take Screenshot
+        run: |
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $Screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $Bitmap = New-Object System.Drawing.Bitmap $Screen.Width, $Screen.Height
+          $Graphics = [System.Drawing.Graphics]::FromImage($Bitmap)
+          $Graphics.CopyFromScreen($Screen.Location, [System.Drawing.Point]::Empty, $Screen.Size)
+          $FileName = "screenshot.png"
+          $Bitmap.Save($FileName, [System.Drawing.Imaging.ImageFormat]::Png)
+          Write-Output "Screenshot saved as $FileName"
+
+      # Send screenshot to Telegram
+      - name: Send Screenshot to Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          GROUP_ID: ${{ secrets.TELEGRAM_GROUP_ID }}
+        run: |
+          $FileName = "screenshot.png"
+          $Url = "https://api.telegram.org/bot$env:BOT_TOKEN/sendPhoto"
+          $Form = @{
+            chat_id = $env:GROUP_ID
+            photo = Get-Item $FileName
+          }
+          Invoke-RestMethod -Uri $Url -Method Post -Form $Form
+      # Keep the workflow alive
+      - name: Keep Alive
+        run: |
+          Write-Output "Keeping the workflow alive..."
+          while ($true) {
+            Start-Sleep -Seconds 3600
+          }
