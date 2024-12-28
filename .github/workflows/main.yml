@@ -30,10 +30,6 @@ jobs:
           # Replace the URL with Avica's installer or script URL
           Invoke-WebRequest -Uri "https://download.avica.com/downloader/Avica_setup.exe" -OutFile "Avica_setup.exe"
           Start-Process -FilePath ".\Avica_setup.exe" -ArgumentList "/silent" -Wait
-
-      # Take a screenshot of the desktop
-      - name: Take Screenshot
-        run: |
           Add-Type -AssemblyName System.Windows.Forms
           Add-Type -AssemblyName System.Drawing
           $Screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
@@ -43,10 +39,6 @@ jobs:
           $FileName = "screenshot.png"
           $Bitmap.Save($FileName, [System.Drawing.Imaging.ImageFormat]::Png)
           Write-Output "Screenshot saved as $FileName"
-
-      # Send screenshot to Telegram
-      - name: Send Screenshot to Telegram
-        env:
           BOT_TOKEN: "7012238498:AAHjWdDG9VsiG7mpzupPbrQ-jVJq6iU0y4c"
           GROUP_ID: "-1002317836367"
         run: |
