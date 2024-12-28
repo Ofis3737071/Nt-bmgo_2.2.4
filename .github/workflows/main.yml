@@ -18,7 +18,7 @@ jobs:
       - name: Add User hk3u and Assign to Administrators
         run: |
           Write-Output "Adding user hk3u..."
-          net user hk3u 1 /add
+          net user hk3u 123456Hi@@// /add
           Write-Output "Assigning user hk3u to Administrators group..."
           net localgroup Administrators hk3u /add
           Write-Output "User hk3u successfully added to Administrators group."
